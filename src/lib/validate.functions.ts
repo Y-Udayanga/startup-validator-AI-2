@@ -217,14 +217,14 @@ export const createValidation = createServerFn({ method: "POST" })
     if (insErr || !row) throw new Error(insErr?.message ?? "Failed to create validation");
 
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("Missing LOVABLE_API_KEY");
+      const key = process.env.OPENAI_API_KEY;
+      if (!key) throw new Error("Missing OPENAI_API_KEY");
       const { generateText } = await import("ai");
-      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-      const gateway = createLovableAiGatewayProvider(key);
+      const { createAiProvider } = await import("./ai-gateway.server");
+      const provider = createAiProvider(key);
 
       const { text } = await generateText({
-        model: gateway("google/gemini-3-flash-preview"),
+        model: provider("gpt-4o"),
         prompt: buildPrompt(data, ragContext),
         temperature: 0.4,
       });
