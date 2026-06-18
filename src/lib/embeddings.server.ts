@@ -1,16 +1,15 @@
-// Server-only embedding helper using Lovable AI Gateway (OpenAI-compatible /embeddings)
+// Server-only embedding helper using OpenAI API directly
 export async function embedTexts(texts: string[]): Promise<number[][]> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("Missing OPENAI_API_KEY");
+  const res = await fetch("https://api.openai.com/v1/embeddings", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": key,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: "openai/text-embedding-3-small",
+      model: "text-embedding-3-small",
       input: texts,
     }),
   });
