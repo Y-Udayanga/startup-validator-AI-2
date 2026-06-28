@@ -139,7 +139,7 @@ function extractJson(text: string): unknown {
 
 export const createValidation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => InputSchema.parse(d))
+  .validator((d: unknown) => InputSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 

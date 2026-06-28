@@ -56,7 +56,7 @@ async function ingestSource(
 
 export const createTextSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => TextInput.parse(d))
+  .validator((d: unknown) => TextInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -77,7 +77,7 @@ export const createTextSource = createServerFn({ method: "POST" })
 
 export const createPdfSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => PdfInput.parse(d))
+  .validator((d: unknown) => PdfInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -113,7 +113,7 @@ function htmlToText(html: string): string {
 
 export const createUrlSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => UrlInput.parse(d))
+  .validator((d: unknown) => UrlInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Fetch URL on server
@@ -165,7 +165,7 @@ export const listSources = createServerFn({ method: "GET" })
 
 export const deleteSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("sources").delete().eq("id", data.id);
     if (error) throw new Error(error.message);

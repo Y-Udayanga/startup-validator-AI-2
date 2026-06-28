@@ -63,7 +63,7 @@ function extractJson(text: string): unknown {
 
 export const generateBusinessPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ validation_id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ validation_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: validation, error: vErr } = await supabase
@@ -139,7 +139,7 @@ Be realistic, concrete and tailored to the country and budget. Use real numbers.
 
 export const getBusinessPlan = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ validation_id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ validation_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: row } = await context.supabase
       .from("business_plans")
