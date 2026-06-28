@@ -28,6 +28,10 @@ function createSupabaseAdminClient() {
   });
 }
 
+export function hasSupabaseAdminCredentials() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
 
 // Server-side Supabase client with service role - bypasses RLS

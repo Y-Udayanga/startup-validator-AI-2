@@ -155,18 +155,22 @@ export const createValidation = createServerFn({ method: "POST" })
     let used = profile?.validations_used_this_period ?? 0;
     const periodStarted = profile?.period_started_at ? new Date(profile.period_started_at).getTime() : Date.now();
     const limit = PLANS[plan].validationsPerMonth;
-    if (limit !== -1 && used >= limit) {
-      throw new Error(
-        `You've used all ${limit} validations on the ${PLANS[plan].name} plan this month. Upgrade to run more.`,
-      );
-    }
-    // Reset window if 30d elapsed (server-side via admin since users can't write privileged columns)
-    if (Date.now() - periodStarted > 30 * 24 * 60 * 60 * 1000) {
-      used = 0;
+    const { hasSupabaseAdminCredentials } = await import("@/integrations/supabase/client.server");
+    const canWriteUsage = hasSupabaseAdminCredentials();
+
+    // Reset window if 30d elapsed when server-side admin credentials are available.
+    if (canWriteUsage && Date.now() - periodStarted > 30 * 24 * 60 * 60 * 1000) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      used = 0;
       await supabaseAdmin
         .from("profiles")
         .upsert({ id: userId, validations_used_this_period: 0, period_started_at: new Date().toISOString() });
+    }
+
+    if (canWriteUsage && limit !== -1 && used >= limit) {
+      throw new Error(
+        `You've used all ${limit} validations on the ${PLANS[plan].name} plan this month. Upgrade to run more.`,
+      );
     }
 
     // --- RAG retrieval ---
@@ -241,12 +245,14 @@ export const createValidation = createServerFn({ method: "POST" })
         })
         .eq("id", row.id);
 
-      // Increment usage (server-side: users cannot write privileged profile columns)
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
-        .from("profiles")
-        .update({ validations_used_this_period: used + 1 })
-        .eq("id", userId);
+      // Usage metering is best-effort so a missing admin key never blocks OpenAI validation.
+      if (canWriteUsage) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin
+          .from("profiles")
+          .update({ validations_used_this_period: used + 1 })
+          .eq("id", userId);
+      }
 
       return { id: row.id as string };
     } catch (err) {
