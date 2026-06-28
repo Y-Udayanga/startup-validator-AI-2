@@ -74,9 +74,9 @@ export const generateBusinessPlan = createServerFn({ method: "POST" })
     if (vErr || !validation) throw new Error("Validation not found");
     if (validation.user_id !== userId) throw new Error("Forbidden");
 
-    // Writes to business_plans go through the service-role client; users only have read access.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row, error: insErr } = await supabaseAdmin
+    const { getSupabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const writeClient = getSupabaseAdmin() ?? supabase;
+    const { data: row, error: insErr } = await writeClient
       .from("business_plans")
       .insert({ user_id: userId, validation_id: data.validation_id, status: "running" })
       .select("id")
@@ -125,14 +125,14 @@ Be realistic, concrete and tailored to the country and budget. Use real numbers.
       });
       const parsed = PlanSchema.parse(extractJson(text));
 
-      await supabaseAdmin
+      await writeClient
         .from("business_plans")
         .update({ status: "complete", plan: parsed as unknown as Json })
         .eq("id", row.id);
       return { id: row.id as string };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      await supabaseAdmin.from("business_plans").update({ status: "failed", error: message }).eq("id", row.id);
+      await writeClient.from("business_plans").update({ status: "failed", error: message }).eq("id", row.id);
       throw new Error(message);
     }
   });

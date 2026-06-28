@@ -160,11 +160,14 @@ export const createValidation = createServerFn({ method: "POST" })
 
     // Reset window if 30d elapsed when server-side admin credentials are available.
     if (canWriteUsage && Date.now() - periodStarted > 30 * 24 * 60 * 60 * 1000) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { getSupabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const supabaseAdmin = getSupabaseAdmin();
       used = 0;
-      await supabaseAdmin
-        .from("profiles")
-        .upsert({ id: userId, validations_used_this_period: 0, period_started_at: new Date().toISOString() });
+      if (supabaseAdmin) {
+        await supabaseAdmin
+          .from("profiles")
+          .upsert({ id: userId, validations_used_this_period: 0, period_started_at: new Date().toISOString() });
+      }
     }
 
     if (canWriteUsage && limit !== -1 && used >= limit) {
@@ -247,11 +250,14 @@ export const createValidation = createServerFn({ method: "POST" })
 
       // Usage metering is best-effort so a missing admin key never blocks OpenAI validation.
       if (canWriteUsage) {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin
-          .from("profiles")
-          .update({ validations_used_this_period: used + 1 })
-          .eq("id", userId);
+        const { getSupabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const supabaseAdmin = getSupabaseAdmin();
+        if (supabaseAdmin) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ validations_used_this_period: used + 1 })
+            .eq("id", userId);
+        }
       }
 
       return { id: row.id as string };
