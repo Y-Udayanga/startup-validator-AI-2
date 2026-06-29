@@ -20,6 +20,8 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const redirectOrigin = import.meta.env.VITE_AUTH_REDIRECT_ORIGIN || window.location.origin;
+  const dashboardRedirectUrl = `${redirectOrigin.replace(/\/$/, "")}/dashboard`;
 
   async function onEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,7 +31,7 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/dashboard" },
+          options: { emailRedirectTo: dashboardRedirectUrl },
         });
         if (error) throw error;
         if (data.session) {
@@ -56,7 +58,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin + "/dashboard",
+          redirectTo: dashboardRedirectUrl,
         },
       });
       if (error) {
