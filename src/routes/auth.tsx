@@ -20,7 +20,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const redirectOrigin = import.meta.env.VITE_AUTH_REDIRECT_ORIGIN || window.location.origin;
+  const redirectOrigin = import.meta.env.VITE_AUTH_REDIRECT_ORIGIN || "https://startup-validator-ai-2.vercel.app";
   const dashboardRedirectUrl = `${redirectOrigin.replace(/\/$/, "")}/dashboard`;
 
   async function onEmailSubmit(e: React.FormEvent) {

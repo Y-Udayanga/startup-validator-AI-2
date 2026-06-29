@@ -6,6 +6,7 @@ import { PLANS, type PlanId } from "./plans";
 const PAID_STATUS = "2";
 const CANCELLED_STATUS = "-2";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const DEFAULT_APP_BASE_URL = "https://startup-validator-ai-2.vercel.app";
 
 export type PayHereMode = "checkout" | "recurring" | "preapproval";
 
@@ -123,6 +124,9 @@ export function resolveAppBaseUrl(request: Request) {
     process.env.VITE_AUTH_REDIRECT_ORIGIN ??
     process.env.VITE_APP_URL;
   if (envBaseUrl) return envBaseUrl.replace(/\/$/, "");
+
+  // Force a stable public callback origin when env is missing (avoids localhost callback URLs).
+  if (DEFAULT_APP_BASE_URL) return DEFAULT_APP_BASE_URL;
 
   const proto = request.headers.get("x-forwarded-proto");
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
