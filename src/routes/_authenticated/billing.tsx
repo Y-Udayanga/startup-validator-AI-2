@@ -207,34 +207,33 @@ function BillingPage() {
                 ))}
               </ul>
               <div className="mt-6 grid gap-2">
-                <button
-                  disabled={isCurrent || !isCheckoutPlan || isPending}
-                  onClick={() => {
-                    if (!isCheckoutPlan) return;
-                    checkout.mutate(p.id as Extract<PlanId, "pro" | "business">);
-                  }}
-                  className={`w-full rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-                    isCurrent || !isCheckoutPlan
-                      ? "border border-border bg-background/40 text-muted-foreground"
-                      : "bg-brand-gradient text-primary-foreground shadow-glow hover:opacity-90"
-                  }`}
-                >
-                  {isCurrent
-                    ? "Current plan"
-                    : !isCheckoutPlan
-                      ? "Included"
-                      : isPending && pendingProvider === "payhere"
-                        ? "Redirecting to PayHere..."
-                        : "Pay with PayHere"}
-                </button>
-                {isCheckoutPlan && !isCurrent && (
+                {isCurrent || !isCheckoutPlan ? (
                   <button
-                    disabled={isPending}
-                    onClick={() => paypalCheckout.mutate(p.id as Extract<PlanId, "pro" | "business">)}
-                    className="w-full rounded-lg border border-[#0070ba]/50 bg-[#0070ba]/15 px-4 py-2.5 text-sm font-medium text-[#7cc5ff] transition hover:bg-[#0070ba]/25 disabled:opacity-60"
+                    disabled
+                    className="w-full rounded-lg border border-border bg-background/40 px-4 py-2.5 text-sm font-medium text-muted-foreground"
                   >
-                    {isPending && pendingProvider === "paypal" ? "Redirecting to PayPal..." : "Pay with PayPal Sandbox"}
+                    {isCurrent ? "Current plan" : "Included"}
                   </button>
+                ) : (
+                  <>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Choose payment method</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <button
+                        disabled={isPending}
+                        onClick={() => checkout.mutate(p.id as Extract<PlanId, "pro" | "business">)}
+                        className="w-full rounded-lg bg-brand-gradient px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90 disabled:opacity-60"
+                      >
+                        {isPending && pendingProvider === "payhere" ? "Redirecting..." : "PayHere"}
+                      </button>
+                      <button
+                        disabled={isPending}
+                        onClick={() => paypalCheckout.mutate(p.id as Extract<PlanId, "pro" | "business">)}
+                        className="w-full rounded-lg border border-[#0070ba]/50 bg-[#0070ba]/15 px-4 py-2.5 text-sm font-medium text-[#7cc5ff] transition hover:bg-[#0070ba]/25 disabled:opacity-60"
+                      >
+                        {isPending && pendingProvider === "paypal" ? "Redirecting..." : "PayPal"}
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
