@@ -87,11 +87,7 @@ export const generateBusinessPlan = createServerFn({ method: "POST" })
     if (insErr || !row) throw new Error(insErr?.message ?? "Failed to create plan");
 
     try {
-      const key = process.env.OPENAI_API_KEY;
-      if (!key) throw new Error("Missing OPENAI_API_KEY");
-      const { generateText } = await import("ai");
-      const { createAiProvider } = await import("./ai-gateway.server");
-      const provider = createAiProvider(key);
+      const { generateTextWithFallback } = await import("./ai-gateway.server");
 
       const prompt = `You are a senior startup consultant. Generate a COMPLETE, realistic business plan as STRICT JSON only — no prose, no markdown.
 
@@ -121,8 +117,7 @@ Return JSON matching EXACTLY this TypeScript shape:
 
 Be realistic, concrete and tailored to the country and budget. Use real numbers.`;
 
-      const { text } = await generateText({
-        model: provider("gpt-4o"),
+      const { text } = await generateTextWithFallback({
         prompt,
         temperature: 0.5,
       });

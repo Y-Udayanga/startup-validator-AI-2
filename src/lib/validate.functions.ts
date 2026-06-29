@@ -224,14 +224,9 @@ export const createValidation = createServerFn({ method: "POST" })
     if (insErr || !row) throw new Error(insErr?.message ?? "Failed to create validation");
 
     try {
-      const key = process.env.OPENAI_API_KEY;
-      if (!key) throw new Error("Missing OPENAI_API_KEY");
-      const { generateText } = await import("ai");
-      const { createAiProvider } = await import("./ai-gateway.server");
-      const provider = createAiProvider(key);
+      const { generateTextWithFallback } = await import("./ai-gateway.server");
 
-      const { text } = await generateText({
-        model: provider("gpt-4o"),
+      const { text } = await generateTextWithFallback({
         prompt: buildPrompt(data, ragContext),
         temperature: 0.4,
       });
