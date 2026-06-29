@@ -22,15 +22,27 @@ export function getPayHereConfig() {
   const merchantId = process.env.PAYHERE_MERCHANT_ID;
   const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
   const sandbox = process.env.PAYHERE_SANDBOX !== "false";
+  const currency = (process.env.PAYHERE_CURRENCY ?? "LKR").toUpperCase();
+  const usdToLkrRate = Number(process.env.PAYHERE_USD_TO_LKR_RATE ?? "65.97368421052632");
 
   if (!merchantId || !merchantSecret) {
     throw new Error("Missing PayHere environment variables: PAYHERE_MERCHANT_ID and PAYHERE_MERCHANT_SECRET are required");
+  }
+
+  if (currency !== "LKR" && currency !== "USD") {
+    throw new Error("PAYHERE_CURRENCY must be either LKR or USD");
+  }
+
+  if (!Number.isFinite(usdToLkrRate) || usdToLkrRate <= 0) {
+    throw new Error("PAYHERE_USD_TO_LKR_RATE must be a positive number");
   }
 
   return {
     merchantId,
     merchantSecret,
     sandbox,
+    currency,
+    usdToLkrRate,
     checkoutUrl: sandbox
       ? "https://sandbox.payhere.lk/pay/checkout"
       : "https://www.payhere.lk/pay/checkout",
@@ -56,7 +68,9 @@ export function amountToCheckoutString(amountCents: number) {
 }
 
 export function planAmountCents(planId: PlanId) {
-  return PLANS[planId].price * 100;
+  const { currency, usdToLkrRate } = getPayHereConfig();
+  const amount = currency === "LKR" ? PLANS[planId].price * usdToLkrRate : PLANS[planId].price;
+  return Math.round(amount * 100);
 }
 
 export function buildCheckoutHash(orderId: string, amount: string, currency: string) {
