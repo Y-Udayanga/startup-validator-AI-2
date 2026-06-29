@@ -110,7 +110,7 @@ function BillingPage() {
         Pick the plan that fits how <span className="text-gradient">fast you ship</span>
       </h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-        PayHere sandbox is live for upgrades. Choose a paid plan and you will be redirected to the PayHere checkout page.
+        Choose a paid plan, then pick your payment method. Both PayHere and PayPal are available.
       </p>
 
       {isLoading ? (
