@@ -11,6 +11,45 @@ export const Route = createFileRoute("/_authenticated/billing")({
   component: BillingPage,
 });
 
+type PayHereClient = {
+  onCompleted?: (orderId: string) => void;
+  onDismissed?: () => void;
+  onError?: (error: string) => void;
+  startPayment: (payment: Record<string, unknown>) => void;
+};
+
+declare global {
+  interface Window {
+    payhere?: PayHereClient;
+  }
+}
+
+async function loadPayHereJs(): Promise<PayHereClient> {
+  if (window.payhere) return window.payhere;
+
+  await new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[src="https://www.payhere.lk/lib/payhere.js"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load PayHere JavaScript SDK")), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://www.payhere.lk/lib/payhere.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load PayHere JavaScript SDK"));
+    document.head.appendChild(script);
+  });
+
+  if (!window.payhere) {
+    throw new Error("PayHere JavaScript SDK is not available");
+  }
+
+  return window.payhere;
+}
+
 function BillingPage() {
   const billingFn = useServerFn(getBilling);
   const checkoutFn = useServerFn(startPayHereCheckout);
@@ -43,20 +82,32 @@ function BillingPage() {
       setPendingPlanId(planId);
       return checkoutFn({ data: { planId } });
     },
-    onSuccess: (payload) => {
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = payload.checkoutUrl;
-      Object.entries(payload.fields).forEach(([name, value]) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-      });
-      document.body.appendChild(form);
-      form.submit();
-      form.remove();
+    onSuccess: async (payload) => {
+      try {
+        const payhere = await loadPayHereJs();
+        payhere.onCompleted = (orderId: string) => {
+          toast.success(`Payment completed for order ${orderId}. Verifying with gateway...`);
+          // Notify callback may arrive slightly later; refresh billing data shortly after popup completion.
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ["billing"] });
+          }, 3000);
+        };
+        payhere.onDismissed = () => {
+          toast.info("Payment popup dismissed");
+        };
+        payhere.onError = (error: string) => {
+          toast.error(error || "PayHere reported a payment error");
+        };
+
+        payhere.startPayment({
+          sandbox: payload.sandbox,
+          ...payload.fields,
+          return_url: undefined,
+          cancel_url: undefined,
+        });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unable to start PayHere popup");
+      }
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Unable to start PayHere checkout");

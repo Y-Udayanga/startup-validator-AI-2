@@ -103,7 +103,7 @@ export const startPayHereCheckout = createServerFn({ method: "POST" })
     const amount = amountToCheckoutString(amountCents);
     const orderId = `PH-${Date.now()}-${userId.slice(0, 8)}-${data.planId}`;
     const baseUrl = resolveAppBaseUrl(request);
-    const { merchantId, checkoutUrl, currency } = getPayHereConfig();
+    const { merchantId, checkoutUrl, currency, sandbox } = getPayHereConfig();
 
     const { error } = await supabaseAdmin.from("payment_orders").insert({
       user_id: userId,
@@ -122,6 +122,7 @@ export const startPayHereCheckout = createServerFn({ method: "POST" })
     return {
       checkoutUrl,
       orderId,
+      sandbox,
       fields: {
         merchant_id: merchantId,
         return_url: `${baseUrl}/payhere/return`,
