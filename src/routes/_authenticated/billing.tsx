@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getBilling, startPayHereCheckout } from "@/lib/billing.functions";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check, CreditCard, ExternalLink, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/billing")({
@@ -205,21 +205,6 @@ function BillingPage() {
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-6 rounded-2xl border border-border/60 bg-surface/20 p-4 text-sm text-muted-foreground">
-        <p className="font-medium text-foreground">Sandbox notes</p>
-        <p className="mt-2">
-          Payments are submitted to PayHere using a secure form POST and come back here automatically after checkout. A public deployment URL is recommended if you want server-to-server notify callbacks during testing.
-        </p>
-        <a
-          href="https://support.payhere.lk/api-&-mobile-sdk/payhere-checkout"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-2 text-primary hover:underline"
-        >
-          PayHere checkout reference <ExternalLink className="h-4 w-4" />
-        </a>
       </div>
     </div>
   );
