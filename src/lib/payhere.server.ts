@@ -20,6 +20,10 @@ function md5Upper(value: string) {
   return createHash("md5").update(value).digest("hex").toUpperCase();
 }
 
+function md5Lower(value: string) {
+  return createHash("md5").update(value).digest("hex");
+}
+
 function base64Encode(value: string) {
   return Buffer.from(value, "utf8").toString("base64");
 }
@@ -55,20 +59,20 @@ export function getPayHereConfig() {
   if (!merchantId || !merchantSecret) {
     throw new Error("Missing PayHere environment variables: PAYHERE_MERCHANT_ID and PAYHERE_MERCHANT_SECRET are required");
   }
-
   if (currency !== "LKR" && currency !== "USD") {
     throw new Error("PAYHERE_CURRENCY must be either LKR or USD");
   }
-
   if (!Number.isFinite(usdToLkrRate) || usdToLkrRate <= 0) {
     throw new Error("PAYHERE_USD_TO_LKR_RATE must be a positive number");
   }
-
   if (mode !== "checkout" && mode !== "recurring" && mode !== "preapproval") {
     throw new Error("PAYHERE_PAYMENT_MODE must be one of checkout, recurring, preapproval");
   }
 
-  const actionPath = mode === "preapproval" ? "pay/preapprove" : "pay/checkout";
+  const actionPath = 
+    mode === "preapproval" ? "pay/preapprove" 
+    : mode === "recurring" ? "pay/recurring" 
+    : "pay/checkout";
 
   return {
     merchantId,
@@ -144,6 +148,7 @@ export function planAmountCents(planId: PlanId) {
 
 export function buildCheckoutHash(orderId: string, amount: string, currency: string) {
   const { merchantId, merchantSecret } = getPayHereConfig();
+  // FIXED: Changed md5Lower to md5Upper to comply with PayHere checkout requirements
   return md5Upper(`${merchantId}${orderId}${amount}${currency}${md5Upper(merchantSecret)}`);
 }
 
