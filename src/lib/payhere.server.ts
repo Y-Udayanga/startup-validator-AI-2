@@ -11,6 +11,17 @@ function md5Upper(value: string) {
   return createHash("md5").update(value).digest("hex").toUpperCase();
 }
 
+function decodeMerchantSecret(secret: string) {
+  const encoding = (process.env.PAYHERE_MERCHANT_SECRET_ENCODING ?? "plain").toLowerCase();
+  if (encoding !== "base64") return secret;
+
+  try {
+    return Buffer.from(secret, "base64").toString("utf8").trim();
+  } catch {
+    throw new Error("PAYHERE_MERCHANT_SECRET_ENCODING is base64, but PAYHERE_MERCHANT_SECRET is not valid Base64");
+  }
+}
+
 function equalHex(left: string, right: string) {
   const a = Buffer.from(left.toUpperCase(), "utf8");
   const b = Buffer.from(right.toUpperCase(), "utf8");
@@ -39,7 +50,7 @@ export function getPayHereConfig() {
 
   return {
     merchantId,
-    merchantSecret,
+    merchantSecret: decodeMerchantSecret(merchantSecret),
     sandbox,
     currency,
     usdToLkrRate,
