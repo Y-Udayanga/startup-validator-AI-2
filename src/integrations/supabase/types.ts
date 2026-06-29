@@ -82,6 +82,8 @@ export type Database = {
           payhere_status_code: string | null
           payhere_status_message: string | null
           payhere_subscription_id: string | null
+          paypal_capture_id: string | null
+          paypal_order_id: string | null
           plan: string
           provider: string
           status: string
@@ -114,6 +116,8 @@ export type Database = {
           payhere_status_code?: string | null
           payhere_status_message?: string | null
           payhere_subscription_id?: string | null
+          paypal_capture_id?: string | null
+          paypal_order_id?: string | null
           plan: string
           provider?: string
           status?: string
@@ -146,6 +150,8 @@ export type Database = {
           payhere_status_code?: string | null
           payhere_status_message?: string | null
           payhere_subscription_id?: string | null
+          paypal_capture_id?: string | null
+          paypal_order_id?: string | null
           plan?: string
           provider?: string
           status?: string

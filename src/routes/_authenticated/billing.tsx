@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getBilling, startPayHereCheckout } from "@/lib/billing.functions";
+import { getBilling, startPayHereCheckout, startPayPalCheckout } from "@/lib/billing.functions";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Check, CreditCard, Loader2, ShieldCheck, Sparkles } from "lucide-react";
@@ -32,8 +32,10 @@ function submitPayHereForm(action: string, fields: Record<string, string>) {
 function BillingPage() {
   const billingFn = useServerFn(getBilling);
   const checkoutFn = useServerFn(startPayHereCheckout);
+  const paypalCheckoutFn = useServerFn(startPayPalCheckout);
   const queryClient = useQueryClient();
   const [pendingPlanId, setPendingPlanId] = useState<PlanId | null>(null);
+  const [pendingProvider, setPendingProvider] = useState<"payhere" | "paypal" | null>(null);
   const { data, isLoading } = useQuery({ queryKey: ["billing"], queryFn: () => billingFn({}) });
 
   useEffect(() => {
@@ -59,6 +61,7 @@ function BillingPage() {
   const checkout = useMutation({
     mutationFn: async (planId: Extract<PlanId, "pro" | "business">) => {
       setPendingPlanId(planId);
+      setPendingProvider("payhere");
       return checkoutFn({ data: { planId } });
     },
     onSuccess: (payload) => {
@@ -73,6 +76,25 @@ function BillingPage() {
     },
     onSettled: () => {
       setPendingPlanId(null);
+      setPendingProvider(null);
+    },
+  });
+
+  const paypalCheckout = useMutation({
+    mutationFn: async (planId: Extract<PlanId, "pro" | "business">) => {
+      setPendingPlanId(planId);
+      setPendingProvider("paypal");
+      return paypalCheckoutFn({ data: { planId } });
+    },
+    onSuccess: (payload) => {
+      window.location.href = payload.approvalUrl;
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Unable to start PayPal checkout");
+    },
+    onSettled: () => {
+      setPendingPlanId(null);
+      setPendingProvider(null);
     },
   });
 
@@ -135,7 +157,9 @@ function BillingPage() {
                   <div key={order.payhere_order_id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-surface/30 px-4 py-3 text-sm">
                     <div>
                       <p className="font-medium">{PLANS[order.plan as PlanId]?.name ?? order.plan} plan</p>
-                      <p className="text-xs text-muted-foreground">{order.payhere_order_id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(order.provider ?? "payhere").toUpperCase()} · {order.payhere_order_id}
+                      </p>
                       {(order.payhere_method || order.payhere_card_no || order.payhere_status_message) && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           {[
@@ -164,7 +188,7 @@ function BillingPage() {
         {Object.values(PLANS).map((p) => {
           const isCurrent = data?.plan === p.id;
           const isCheckoutPlan = p.id === "pro" || p.id === "business";
-          const isPending = pendingPlanId === p.id && checkout.isPending;
+          const isPending = pendingPlanId === p.id && (checkout.isPending || paypalCheckout.isPending);
           return (
             <div key={p.id} className={`rounded-2xl border p-6 ${p.id === "pro" ? "border-primary/60 bg-primary/5 shadow-glow" : "border-border/60 bg-surface/40"}`}>
               {p.id === "pro" && (
@@ -182,26 +206,37 @@ function BillingPage() {
                   <li key={f} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {f}</li>
                 ))}
               </ul>
-              <button
-                disabled={isCurrent || !isCheckoutPlan || checkout.isPending}
-                onClick={() => {
-                  if (!isCheckoutPlan) return;
-                  checkout.mutate(p.id as Extract<PlanId, "pro" | "business">);
-                }}
-                className={`mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-                  isCurrent || !isCheckoutPlan
-                    ? "border border-border bg-background/40 text-muted-foreground"
-                    : "bg-brand-gradient text-primary-foreground shadow-glow hover:opacity-90"
-                }`}
-              >
-                {isCurrent
-                  ? "Current plan"
-                  : !isCheckoutPlan
-                    ? "Included"
-                    : isPending
-                      ? "Redirecting to PayHere..."
-                      : `Upgrade with PayHere`}
-              </button>
+              <div className="mt-6 grid gap-2">
+                <button
+                  disabled={isCurrent || !isCheckoutPlan || isPending}
+                  onClick={() => {
+                    if (!isCheckoutPlan) return;
+                    checkout.mutate(p.id as Extract<PlanId, "pro" | "business">);
+                  }}
+                  className={`w-full rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+                    isCurrent || !isCheckoutPlan
+                      ? "border border-border bg-background/40 text-muted-foreground"
+                      : "bg-brand-gradient text-primary-foreground shadow-glow hover:opacity-90"
+                  }`}
+                >
+                  {isCurrent
+                    ? "Current plan"
+                    : !isCheckoutPlan
+                      ? "Included"
+                      : isPending && pendingProvider === "payhere"
+                        ? "Redirecting to PayHere..."
+                        : "Pay with PayHere"}
+                </button>
+                {isCheckoutPlan && !isCurrent && (
+                  <button
+                    disabled={isPending}
+                    onClick={() => paypalCheckout.mutate(p.id as Extract<PlanId, "pro" | "business">)}
+                    className="w-full rounded-lg border border-[#0070ba]/50 bg-[#0070ba]/15 px-4 py-2.5 text-sm font-medium text-[#7cc5ff] transition hover:bg-[#0070ba]/25 disabled:opacity-60"
+                  >
+                    {isPending && pendingProvider === "paypal" ? "Redirecting to PayPal..." : "Pay with PayPal Sandbox"}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}

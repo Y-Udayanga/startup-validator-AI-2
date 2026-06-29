@@ -13,6 +13,8 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PaypalReturnRouteImport } from './routes/paypal/return'
+import { Route as PaypalCancelRouteImport } from './routes/paypal/cancel'
 import { Route as PayhereReturnRouteImport } from './routes/payhere/return'
 import { Route as PayhereNotifyRouteImport } from './routes/payhere/notify'
 import { Route as PayhereCancelRouteImport } from './routes/payhere/cancel'
@@ -39,6 +41,16 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaypalReturnRoute = PaypalReturnRouteImport.update({
+  id: '/paypal/return',
+  path: '/paypal/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaypalCancelRoute = PaypalCancelRouteImport.update({
+  id: '/paypal/cancel',
+  path: '/paypal/cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayhereReturnRoute = PayhereReturnRouteImport.update({
@@ -94,6 +106,8 @@ export interface FileRoutesByFullPath {
   '/payhere/cancel': typeof PayhereCancelRoute
   '/payhere/notify': typeof PayhereNotifyRoute
   '/payhere/return': typeof PayhereReturnRoute
+  '/paypal/cancel': typeof PaypalCancelRoute
+  '/paypal/return': typeof PaypalReturnRoute
   '/validations/$id': typeof AuthenticatedValidationsIdRoute
 }
 export interface FileRoutesByTo {
@@ -107,6 +121,8 @@ export interface FileRoutesByTo {
   '/payhere/cancel': typeof PayhereCancelRoute
   '/payhere/notify': typeof PayhereNotifyRoute
   '/payhere/return': typeof PayhereReturnRoute
+  '/paypal/cancel': typeof PaypalCancelRoute
+  '/paypal/return': typeof PaypalReturnRoute
   '/validations/$id': typeof AuthenticatedValidationsIdRoute
 }
 export interface FileRoutesById {
@@ -122,6 +138,8 @@ export interface FileRoutesById {
   '/payhere/cancel': typeof PayhereCancelRoute
   '/payhere/notify': typeof PayhereNotifyRoute
   '/payhere/return': typeof PayhereReturnRoute
+  '/paypal/cancel': typeof PaypalCancelRoute
+  '/paypal/return': typeof PaypalReturnRoute
   '/_authenticated/validations/$id': typeof AuthenticatedValidationsIdRoute
 }
 export interface FileRouteTypes {
@@ -137,6 +155,8 @@ export interface FileRouteTypes {
     | '/payhere/cancel'
     | '/payhere/notify'
     | '/payhere/return'
+    | '/paypal/cancel'
+    | '/paypal/return'
     | '/validations/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -150,6 +170,8 @@ export interface FileRouteTypes {
     | '/payhere/cancel'
     | '/payhere/notify'
     | '/payhere/return'
+    | '/paypal/cancel'
+    | '/paypal/return'
     | '/validations/$id'
   id:
     | '__root__'
@@ -164,6 +186,8 @@ export interface FileRouteTypes {
     | '/payhere/cancel'
     | '/payhere/notify'
     | '/payhere/return'
+    | '/paypal/cancel'
+    | '/paypal/return'
     | '/_authenticated/validations/$id'
   fileRoutesById: FileRoutesById
 }
@@ -175,6 +199,8 @@ export interface RootRouteChildren {
   PayhereCancelRoute: typeof PayhereCancelRoute
   PayhereNotifyRoute: typeof PayhereNotifyRoute
   PayhereReturnRoute: typeof PayhereReturnRoute
+  PaypalCancelRoute: typeof PaypalCancelRoute
+  PaypalReturnRoute: typeof PaypalReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -205,6 +231,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paypal/return': {
+      id: '/paypal/return'
+      path: '/paypal/return'
+      fullPath: '/paypal/return'
+      preLoaderRoute: typeof PaypalReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paypal/cancel': {
+      id: '/paypal/cancel'
+      path: '/paypal/cancel'
+      fullPath: '/paypal/cancel'
+      preLoaderRoute: typeof PaypalCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payhere/return': {
@@ -293,6 +333,8 @@ const rootRouteChildren: RootRouteChildren = {
   PayhereCancelRoute: PayhereCancelRoute,
   PayhereNotifyRoute: PayhereNotifyRoute,
   PayhereReturnRoute: PayhereReturnRoute,
+  PaypalCancelRoute: PaypalCancelRoute,
+  PaypalReturnRoute: PaypalReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

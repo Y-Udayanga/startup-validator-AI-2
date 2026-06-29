@@ -13,6 +13,7 @@ import {
   reconcilePaymentOrderFromRetrieval,
   resolveAppBaseUrl,
 } from "./payhere.server";
+import { createPayPalCheckout } from "./paypal.server";
 
 function normalizePlanId(plan: string | null | undefined): PlanId {
   return plan && plan in PLANS ? (plan as PlanId) : "free";
@@ -63,7 +64,7 @@ export const getBilling = createServerFn({ method: "GET" })
     const def = PLANS[plan] ?? PLANS.free;
     let { data: recentOrders } = await supabase
       .from("payment_orders")
-      .select("payhere_order_id, plan, status, amount_cents, currency, created_at, paid_at, payhere_method, payhere_card_no, payhere_status_message")
+      .select("payhere_order_id, plan, provider, status, amount_cents, currency, created_at, paid_at, payhere_method, payhere_card_no, payhere_status_message, paypal_order_id, paypal_capture_id")
       .order("created_at", { ascending: false })
       .limit(5);
 
@@ -82,7 +83,7 @@ export const getBilling = createServerFn({ method: "GET" })
       if (pendingOrders.length > 0) {
         const refreshed = await supabase
           .from("payment_orders")
-          .select("payhere_order_id, plan, status, amount_cents, currency, created_at, paid_at, payhere_method, payhere_card_no, payhere_status_message")
+          .select("payhere_order_id, plan, provider, status, amount_cents, currency, created_at, paid_at, payhere_method, payhere_card_no, payhere_status_message, paypal_order_id, paypal_capture_id")
           .order("created_at", { ascending: false })
           .limit(5);
         recentOrders = refreshed.data ?? recentOrders;
@@ -183,4 +184,20 @@ export const startPayHereCheckout = createServerFn({ method: "POST" })
       mode,
       fields,
     };
+  });
+
+export const startPayPalCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => z.object({ planId: z.enum(["pro", "business"]) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const request = getRequest();
+    if (!request) {
+      throw new Error("Unable to access request context");
+    }
+
+    return createPayPalCheckout({
+      planId: data.planId,
+      userId: context.userId,
+      request,
+    });
   });
