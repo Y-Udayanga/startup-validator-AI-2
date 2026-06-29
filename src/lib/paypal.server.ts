@@ -34,6 +34,16 @@ type PayPalCaptureResponse = {
   }>;
 };
 
+type PaymentOrderRow = {
+  id: string;
+  user_id: string;
+  plan: string;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  payhere_payment_id: string | null;
+};
+
 export function getPayPalConfig() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
@@ -112,6 +122,7 @@ export async function createPayPalCheckout(input: { planId: Extract<PlanId, "pro
   if (!admin) {
     throw new Error("Server misconfiguration: missing SUPABASE_SERVICE_ROLE_KEY");
   }
+  const db = admin as any;
 
   const plan = PLANS[input.planId];
   const amountCents = paypalAmountCents(input.planId);
@@ -120,7 +131,7 @@ export async function createPayPalCheckout(input: { planId: Extract<PlanId, "pro
   const { currency } = getPayPalConfig();
   const merchantOrderId = `PP-${Date.now()}-${input.userId.slice(0, 8)}-${input.planId}`;
 
-  const { error } = await admin.from("payment_orders").insert({
+  const { error } = await db.from("payment_orders").insert({
     user_id: input.userId,
     plan: input.planId,
     provider: "paypal",
@@ -164,7 +175,7 @@ export async function createPayPalCheckout(input: { planId: Extract<PlanId, "pro
     throw new Error("PayPal approval URL was not returned");
   }
 
-  await admin
+  await db
     .from("payment_orders")
     .update({ payhere_payment_id: order.id, payhere_status_message: order.status ?? null })
     .eq("payhere_order_id", merchantOrderId);
@@ -181,13 +192,14 @@ export async function capturePayPalOrder(input: { merchantOrderId: string; paypa
   if (!admin) {
     throw new Error("Server misconfiguration: missing SUPABASE_SERVICE_ROLE_KEY");
   }
+  const db = admin as any;
 
-  const { data: order, error } = await admin
+  const { data: order, error } = await db
     .from("payment_orders")
     .select("id, user_id, plan, amount_cents, currency, status, payhere_payment_id")
     .eq("payhere_order_id", input.merchantOrderId)
     .eq("provider", "paypal")
-    .maybeSingle();
+    .maybeSingle() as { data: PaymentOrderRow | null; error: Error | null };
 
   if (error || !order) {
     throw new Error("PayPal payment order not found");
@@ -218,7 +230,7 @@ export async function capturePayPalOrder(input: { merchantOrderId: string; paypa
   const paid = capture.status === "COMPLETED" || firstCapture?.status === "COMPLETED";
   const nextStatus = paid ? "paid" : "pending";
 
-  await admin
+  await db
     .from("payment_orders")
     .update({
       status: nextStatus,
@@ -256,8 +268,9 @@ export async function cancelPayPalOrder(orderId: string | null) {
   if (!admin) {
     throw new Error("Server misconfiguration: missing SUPABASE_SERVICE_ROLE_KEY");
   }
+  const db = admin as any;
 
-  await admin
+  await db
     .from("payment_orders")
     .update({ status: "cancelled", payhere_status_message: "PayPal checkout cancelled by user" })
     .eq("payhere_order_id", orderId)

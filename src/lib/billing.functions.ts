@@ -69,7 +69,9 @@ export const getBilling = createServerFn({ method: "GET" })
       .limit(5);
 
     if (hasPayHereRetrievalConfig()) {
-      const pendingOrders = (recentOrders ?? []).filter((order) => order.status === "pending").slice(0, 2);
+      const pendingOrders = (recentOrders ?? [])
+        .filter((order) => order.status === "pending" && (order.provider ?? "payhere") === "payhere")
+        .slice(0, 2);
       await Promise.all(
         pendingOrders.map(async (order) => {
           try {
