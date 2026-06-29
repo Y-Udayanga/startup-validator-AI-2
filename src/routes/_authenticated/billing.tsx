@@ -36,6 +36,8 @@ function BillingPage() {
   const queryClient = useQueryClient();
   const [pendingPlanId, setPendingPlanId] = useState<PlanId | null>(null);
   const [pendingProvider, setPendingProvider] = useState<"payhere" | "paypal" | null>(null);
+  const [openMethodPickerPlanId, setOpenMethodPickerPlanId] = useState<PlanId | null>(null);
+  const [showRecentAttempts, setShowRecentAttempts] = useState(false);
   const { data, isLoading } = useQuery({ queryKey: ["billing"], queryFn: () => billingFn({}) });
 
   useEffect(() => {
@@ -151,34 +153,45 @@ function BillingPage() {
 
           {data.recentOrders.length > 0 && (
             <div className="mt-4 rounded-2xl border border-border/60 bg-background/30 p-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Recent payment attempts</p>
-              <div className="mt-3 grid gap-2">
-                {data.recentOrders.map((order) => (
-                  <div key={order.payhere_order_id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-surface/30 px-4 py-3 text-sm">
-                    <div>
-                      <p className="font-medium">{PLANS[order.plan as PlanId]?.name ?? order.plan} plan</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(order.provider ?? "payhere").toUpperCase()} · {order.payhere_order_id}
-                      </p>
-                      {(order.payhere_method || order.payhere_card_no || order.payhere_status_message) && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {[
-                            order.payhere_method,
-                            order.payhere_card_no,
-                            order.payhere_status_message,
-                          ]
-                            .filter(Boolean)
-                            .join(" • ")}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{order.currency} {(order.amount_cents / 100).toFixed(2)}</p>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">{order.status}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Recent payment attempts</p>
+                <button
+                  type="button"
+                  onClick={() => setShowRecentAttempts((v) => !v)}
+                  className="rounded-md border border-border/60 bg-background/40 px-3 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
+                >
+                  {showRecentAttempts ? "Hide" : "Show"}
+                </button>
               </div>
+              {showRecentAttempts && (
+                <div className="mt-3 grid gap-2">
+                  {data.recentOrders.map((order) => (
+                    <div key={order.payhere_order_id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-surface/30 px-4 py-3 text-sm">
+                      <div>
+                        <p className="font-medium">{PLANS[order.plan as PlanId]?.name ?? order.plan} plan</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(order.provider ?? "payhere").toUpperCase()} · {order.payhere_order_id}
+                        </p>
+                        {(order.payhere_method || order.payhere_card_no || order.payhere_status_message) && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {[
+                              order.payhere_method,
+                              order.payhere_card_no,
+                              order.payhere_status_message,
+                            ]
+                              .filter(Boolean)
+                              .join(" • ")}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{order.currency} {(order.amount_cents / 100).toFixed(2)}</p>
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground">{order.status}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </>
@@ -214,6 +227,15 @@ function BillingPage() {
                   >
                     {isCurrent ? "Current plan" : "Included"}
                   </button>
+                ) : openMethodPickerPlanId !== p.id ? (
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => setOpenMethodPickerPlanId(p.id)}
+                    className="w-full rounded-lg border border-border/70 bg-background/50 px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-background/70 disabled:opacity-60"
+                  >
+                    Choose payment method
+                  </button>
                 ) : (
                   <>
                     <p className="text-xs uppercase tracking-wider text-muted-foreground">Choose payment method</p>
@@ -233,6 +255,14 @@ function BillingPage() {
                         {isPending && pendingProvider === "paypal" ? "Redirecting..." : "PayPal"}
                       </button>
                     </div>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => setOpenMethodPickerPlanId(null)}
+                      className="w-full rounded-lg border border-border/60 bg-background/30 px-4 py-2 text-xs font-medium text-muted-foreground transition hover:text-foreground disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
                   </>
                 )}
               </div>
