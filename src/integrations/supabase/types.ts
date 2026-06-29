@@ -55,6 +55,57 @@ export type Database = {
           },
         ]
       }
+      payment_orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          payhere_order_id: string
+          payhere_payment_id: string | null
+          payhere_status_code: string | null
+          payhere_status_message: string | null
+          plan: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payhere_order_id: string
+          payhere_payment_id?: string | null
+          payhere_status_code?: string | null
+          payhere_status_message?: string | null
+          plan: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payhere_order_id?: string
+          payhere_payment_id?: string | null
+          payhere_status_code?: string | null
+          payhere_status_message?: string | null
+          plan?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -63,8 +114,6 @@ export type Database = {
           id: string
           period_started_at: string
           plan: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
           updated_at: string
           validations_used_this_period: number
         }
@@ -75,8 +124,6 @@ export type Database = {
           id: string
           period_started_at?: string
           plan?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string
           validations_used_this_period?: number
         }
@@ -87,8 +134,6 @@ export type Database = {
           id?: string
           period_started_at?: string
           plan?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string
           validations_used_this_period?: number
         }

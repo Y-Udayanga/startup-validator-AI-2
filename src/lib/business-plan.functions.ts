@@ -75,7 +75,10 @@ export const generateBusinessPlan = createServerFn({ method: "POST" })
     if (validation.user_id !== userId) throw new Error("Forbidden");
 
     const { getSupabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const writeClient = getSupabaseAdmin() ?? supabase;
+    const writeClient = getSupabaseAdmin();
+    if (!writeClient) {
+      throw new Error("Server misconfiguration: missing SUPABASE_SERVICE_ROLE_KEY");
+    }
     const { data: row, error: insErr } = await writeClient
       .from("business_plans")
       .insert({ user_id: userId, validation_id: data.validation_id, status: "running" })

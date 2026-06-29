@@ -13,6 +13,9 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PayhereReturnRouteImport } from './routes/payhere/return'
+import { Route as PayhereNotifyRouteImport } from './routes/payhere/notify'
+import { Route as PayhereCancelRouteImport } from './routes/payhere/cancel'
 import { Route as AuthenticatedValidateRouteImport } from './routes/_authenticated/validate'
 import { Route as AuthenticatedSourcesRouteImport } from './routes/_authenticated/sources'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -36,6 +39,21 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayhereReturnRoute = PayhereReturnRouteImport.update({
+  id: '/payhere/return',
+  path: '/payhere/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayhereNotifyRoute = PayhereNotifyRouteImport.update({
+  id: '/payhere/notify',
+  path: '/payhere/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayhereCancelRoute = PayhereCancelRouteImport.update({
+  id: '/payhere/cancel',
+  path: '/payhere/cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedValidateRoute = AuthenticatedValidateRouteImport.update({
@@ -73,6 +91,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/sources': typeof AuthenticatedSourcesRoute
   '/validate': typeof AuthenticatedValidateRoute
+  '/payhere/cancel': typeof PayhereCancelRoute
+  '/payhere/notify': typeof PayhereNotifyRoute
+  '/payhere/return': typeof PayhereReturnRoute
   '/validations/$id': typeof AuthenticatedValidationsIdRoute
 }
 export interface FileRoutesByTo {
@@ -83,6 +104,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/sources': typeof AuthenticatedSourcesRoute
   '/validate': typeof AuthenticatedValidateRoute
+  '/payhere/cancel': typeof PayhereCancelRoute
+  '/payhere/notify': typeof PayhereNotifyRoute
+  '/payhere/return': typeof PayhereReturnRoute
   '/validations/$id': typeof AuthenticatedValidationsIdRoute
 }
 export interface FileRoutesById {
@@ -95,6 +119,9 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/sources': typeof AuthenticatedSourcesRoute
   '/_authenticated/validate': typeof AuthenticatedValidateRoute
+  '/payhere/cancel': typeof PayhereCancelRoute
+  '/payhere/notify': typeof PayhereNotifyRoute
+  '/payhere/return': typeof PayhereReturnRoute
   '/_authenticated/validations/$id': typeof AuthenticatedValidationsIdRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +134,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/sources'
     | '/validate'
+    | '/payhere/cancel'
+    | '/payhere/notify'
+    | '/payhere/return'
     | '/validations/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,6 +147,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/sources'
     | '/validate'
+    | '/payhere/cancel'
+    | '/payhere/notify'
+    | '/payhere/return'
     | '/validations/$id'
   id:
     | '__root__'
@@ -128,6 +161,9 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/sources'
     | '/_authenticated/validate'
+    | '/payhere/cancel'
+    | '/payhere/notify'
+    | '/payhere/return'
     | '/_authenticated/validations/$id'
   fileRoutesById: FileRoutesById
 }
@@ -136,6 +172,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PayhereCancelRoute: typeof PayhereCancelRoute
+  PayhereNotifyRoute: typeof PayhereNotifyRoute
+  PayhereReturnRoute: typeof PayhereReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -166,6 +205,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payhere/return': {
+      id: '/payhere/return'
+      path: '/payhere/return'
+      fullPath: '/payhere/return'
+      preLoaderRoute: typeof PayhereReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payhere/notify': {
+      id: '/payhere/notify'
+      path: '/payhere/notify'
+      fullPath: '/payhere/notify'
+      preLoaderRoute: typeof PayhereNotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payhere/cancel': {
+      id: '/payhere/cancel'
+      path: '/payhere/cancel'
+      fullPath: '/payhere/cancel'
+      preLoaderRoute: typeof PayhereCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/validate': {
@@ -230,6 +290,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PayhereCancelRoute: PayhereCancelRoute,
+  PayhereNotifyRoute: PayhereNotifyRoute,
+  PayhereReturnRoute: PayhereReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
