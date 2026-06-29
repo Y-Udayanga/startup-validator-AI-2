@@ -35,12 +35,12 @@ function Landing() {
 function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-md bg-brand-gradient shadow-glow">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="font-display text-lg font-semibold tracking-tight">
+          <span className="font-display text-sm font-semibold tracking-tight sm:text-lg">
             Startup Validator <span className="text-gradient">AI</span>
           </span>
         </Link>
@@ -58,9 +58,9 @@ function Nav() {
           </Link>
           <Link
             to="/auth"
-            className="inline-flex items-center gap-1.5 rounded-md bg-brand-gradient px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-brand-gradient px-3 py-2 text-xs font-medium text-primary-foreground shadow-glow transition hover:opacity-90 sm:px-4 sm:text-sm"
           >
-            Get started <ArrowRight className="h-3.5 w-3.5" />
+            Start <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>
@@ -73,7 +73,7 @@ function Hero() {
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-radial-glow" aria-hidden />
       <div className="absolute inset-0 bg-grid opacity-40" aria-hidden />
-      <div className="relative mx-auto max-w-5xl px-6 pb-24 pt-24 text-center sm:pt-32">
+      <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-14 text-center sm:px-6 sm:pb-24 sm:pt-24 lg:pt-32">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -88,7 +88,7 @@ function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.05 }}
-          className="mt-6 font-display text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl"
+          className="mt-6 font-display text-3xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-7xl"
         >
           Validate your startup idea <br />
           <span className="text-gradient">before you invest</span> a dollar.
@@ -98,7 +98,7 @@ function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg"
+          className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:mt-6 sm:text-base lg:text-lg"
         >
           Get an AI-generated validation report on market demand, competition, SWOT, risks,
           revenue forecasts and a final startup score — in under 60 seconds.
@@ -108,11 +108,11 @@ function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-3"
+          className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:items-center"
         >
           <Link
             to="/auth"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-gradient px-6 py-3 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-gradient px-6 py-3 text-sm font-medium text-primary-foreground shadow-glow transition hover:opacity-90"
           >
             Validate my idea <ArrowRight className="h-4 w-4" />
           </Link>
@@ -128,21 +128,21 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25 }}
-          className="relative mx-auto mt-16 max-w-4xl"
+          className="relative mx-auto mt-12 max-w-4xl sm:mt-16"
         >
           <div className="glass rounded-2xl p-2 shadow-violet">
-            <div className="rounded-xl border border-border/60 bg-background/60 p-6 text-left">
-              <div className="flex items-center justify-between border-b border-border/50 pb-4">
+            <div className="rounded-xl border border-border/60 bg-background/60 p-4 text-left sm:p-6">
+              <div className="flex flex-col gap-3 border-b border-border/50 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Startup Score</p>
-                  <p className="font-display text-3xl font-semibold">SmartCrop AI</p>
+                  <p className="font-display text-2xl font-semibold sm:text-3xl">SmartCrop AI</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-display text-5xl font-bold text-gradient">83</p>
+                <div className="text-left sm:text-right">
+                  <p className="font-display text-4xl font-bold text-gradient sm:text-5xl">83</p>
                   <p className="text-xs text-success">🟢 Strong Idea</p>
                 </div>
               </div>
-              <div className="mt-5 grid grid-cols-5 gap-3">
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {[
                   ["Demand", 87],
                   ["Compet.", 70],
@@ -173,7 +173,7 @@ function Hero() {
 function LogosStrip() {
   return (
     <div className="border-y border-border/50 bg-surface/30">
-      <div className="mx-auto max-w-7xl px-6 py-6 text-center">
+      <div className="mx-auto max-w-7xl px-4 py-6 text-center sm:px-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           Built for founders, students, incubators and investors
         </p>
@@ -193,9 +193,9 @@ const FEATURES = [
 
 function Features() {
   return (
-    <section id="features" className="mx-auto max-w-7xl px-6 py-24">
+    <section id="features" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">
           A full <span className="text-gradient">consulting team</span><br />in one report.
         </h2>
         <p className="mt-4 text-muted-foreground">
@@ -234,9 +234,9 @@ const STEPS = [
 function HowItWorks() {
   return (
     <section id="how" className="border-t border-border/50 bg-surface/30">
-      <div className="mx-auto max-w-7xl px-6 py-24">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">
             From idea to verdict in <span className="text-gradient">3 steps</span>.
           </h2>
         </div>
@@ -264,10 +264,10 @@ function ScoreShowcase() {
     "Save unlimited validations",
   ];
   return (
-    <section id="score" className="mx-auto max-w-7xl px-6 py-24">
-      <div className="grid items-center gap-12 lg:grid-cols-2">
+    <section id="score" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
         <div>
-          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">
             One number. <span className="text-gradient">One clear verdict.</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
@@ -290,13 +290,13 @@ function ScoreShowcase() {
           </Link>
         </div>
 
-        <div className="glass rounded-2xl p-6 shadow-violet">
-          <div className="flex items-center justify-between">
+        <div className="glass rounded-2xl p-4 shadow-violet sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Verdict</p>
-              <p className="mt-1 font-display text-2xl">🟢 Strong Business Idea</p>
+              <p className="mt-1 font-display text-xl sm:text-2xl">🟢 Strong Business Idea</p>
             </div>
-            <p className="font-display text-7xl font-bold text-gradient">83</p>
+            <p className="font-display text-5xl font-bold text-gradient sm:text-7xl">83</p>
           </div>
           <div className="mt-6 space-y-3">
             {[
@@ -328,12 +328,12 @@ function ScoreShowcase() {
 
 function CTA() {
   return (
-    <section className="mx-auto max-w-5xl px-6 pb-24">
-      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-surface/40 p-10 text-center shadow-violet">
+    <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6 sm:pb-24">
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-surface/40 p-6 text-center shadow-violet sm:p-10">
         <div className="absolute inset-0 bg-radial-glow opacity-60" aria-hidden />
         <div className="relative">
           <Users className="mx-auto h-8 w-8 text-primary" />
-          <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-5xl">
             Stop guessing. Start <span className="text-gradient">validating</span>.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
@@ -355,7 +355,7 @@ function CTA() {
 function Footer() {
   return (
     <footer className="border-t border-border/50">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 text-center text-sm text-muted-foreground sm:flex-row sm:px-6 sm:text-left">
         <p>© {new Date().getFullYear()} Startup Validator AI</p>
         <p>Validate your startup idea before you invest your time and money.</p>
       </div>
