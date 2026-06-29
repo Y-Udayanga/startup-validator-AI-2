@@ -61,7 +61,11 @@ export function getPayHereConfig() {
 }
 
 export function resolveAppBaseUrl(request: Request) {
-  const envBaseUrl = process.env.APP_BASE_URL ?? process.env.PUBLIC_APP_URL ?? process.env.VITE_APP_URL;
+  const envBaseUrl =
+    process.env.APP_BASE_URL ??
+    process.env.PUBLIC_APP_URL ??
+    process.env.VITE_AUTH_REDIRECT_ORIGIN ??
+    process.env.VITE_APP_URL;
   if (envBaseUrl) return envBaseUrl.replace(/\/$/, "");
 
   const proto = request.headers.get("x-forwarded-proto");
@@ -75,7 +79,9 @@ export function resolveAppBaseUrl(request: Request) {
 }
 
 export function amountToCheckoutString(amountCents: number) {
-  return (amountCents / 100).toFixed(2);
+  return Number(amountCents / 100)
+    .toLocaleString("en-us", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    .replaceAll(",", "");
 }
 
 export function planAmountCents(planId: PlanId) {
