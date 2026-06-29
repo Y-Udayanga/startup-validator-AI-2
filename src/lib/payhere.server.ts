@@ -48,7 +48,7 @@ export function getPayHereConfig() {
   const sandbox = process.env.PAYHERE_SANDBOX !== "false";
   const currency = (process.env.PAYHERE_CURRENCY ?? "LKR").toUpperCase();
   const usdToLkrRate = Number(process.env.PAYHERE_USD_TO_LKR_RATE ?? "65.97368421052632");
-  const mode = (process.env.PAYHERE_PAYMENT_MODE ?? "recurring").toLowerCase() as PayHereMode;
+  const mode = (process.env.PAYHERE_PAYMENT_MODE ?? "checkout").toLowerCase() as PayHereMode;
   const recurringPeriod = process.env.PAYHERE_RECURRING_PERIOD ?? "1 Month";
   const recurringDuration = process.env.PAYHERE_RECURRING_DURATION ?? "Forever";
 

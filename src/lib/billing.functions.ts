@@ -22,6 +22,7 @@ export const getBilling = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId, claims } = context;
+    const payHereConfig = getPayHereConfig();
     let { data: profile } = await supabase
       .from("profiles")
       .select("plan, validations_used_this_period, period_started_at, current_period_end")
@@ -97,7 +98,7 @@ export const getBilling = createServerFn({ method: "GET" })
       currentPeriodEnd: profile?.current_period_end ?? null,
       hasSubscription: plan !== "free",
       email: typeof claims.email === "string" ? claims.email : null,
-      gateway: "PayHere Sandbox",
+      gateway: `PayHere ${payHereConfig.sandbox ? "Sandbox" : "Live"} ${payHereConfig.mode}`,
       recentOrders: recentOrders ?? [],
     };
   });
