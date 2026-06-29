@@ -62,10 +62,26 @@ export type Database = {
           currency: string
           id: string
           paid_at: string | null
+          payhere_card_expiry: string | null
+          payhere_card_holder_name: string | null
+          payhere_card_no: string | null
+          payhere_custom_1: string | null
+          payhere_custom_2: string | null
+          payhere_customer_token: string | null
+          payhere_item_duration: string | null
+          payhere_item_rec_date_next: string | null
+          payhere_item_rec_install_paid: number | null
+          payhere_item_rec_status: string | null
+          payhere_item_recurrence: string | null
+          payhere_message_type: string | null
+          payhere_mode: string | null
+          payhere_method: string | null
           payhere_order_id: string
           payhere_payment_id: string | null
+          payhere_recurring: boolean | null
           payhere_status_code: string | null
           payhere_status_message: string | null
+          payhere_subscription_id: string | null
           plan: string
           provider: string
           status: string
@@ -78,10 +94,26 @@ export type Database = {
           currency?: string
           id?: string
           paid_at?: string | null
+          payhere_card_expiry?: string | null
+          payhere_card_holder_name?: string | null
+          payhere_card_no?: string | null
+          payhere_custom_1?: string | null
+          payhere_custom_2?: string | null
+          payhere_customer_token?: string | null
+          payhere_item_duration?: string | null
+          payhere_item_rec_date_next?: string | null
+          payhere_item_rec_install_paid?: number | null
+          payhere_item_rec_status?: string | null
+          payhere_item_recurrence?: string | null
+          payhere_message_type?: string | null
+          payhere_mode?: string | null
+          payhere_method?: string | null
           payhere_order_id: string
           payhere_payment_id?: string | null
+          payhere_recurring?: boolean | null
           payhere_status_code?: string | null
           payhere_status_message?: string | null
+          payhere_subscription_id?: string | null
           plan: string
           provider?: string
           status?: string
@@ -94,10 +126,26 @@ export type Database = {
           currency?: string
           id?: string
           paid_at?: string | null
+          payhere_card_expiry?: string | null
+          payhere_card_holder_name?: string | null
+          payhere_card_no?: string | null
+          payhere_custom_1?: string | null
+          payhere_custom_2?: string | null
+          payhere_customer_token?: string | null
+          payhere_item_duration?: string | null
+          payhere_item_rec_date_next?: string | null
+          payhere_item_rec_install_paid?: number | null
+          payhere_item_rec_status?: string | null
+          payhere_item_recurrence?: string | null
+          payhere_message_type?: string | null
+          payhere_mode?: string | null
+          payhere_method?: string | null
           payhere_order_id?: string
           payhere_payment_id?: string | null
+          payhere_recurring?: boolean | null
           payhere_status_code?: string | null
           payhere_status_message?: string | null
+          payhere_subscription_id?: string | null
           plan?: string
           provider?: string
           status?: string

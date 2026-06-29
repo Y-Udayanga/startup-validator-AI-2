@@ -1,0 +1,17 @@
+ALTER TABLE public.payment_orders
+  ADD COLUMN IF NOT EXISTS payhere_mode text,
+  ADD COLUMN IF NOT EXISTS payhere_subscription_id text,
+  ADD COLUMN IF NOT EXISTS payhere_customer_token text,
+  ADD COLUMN IF NOT EXISTS payhere_message_type text,
+  ADD COLUMN IF NOT EXISTS payhere_method text,
+  ADD COLUMN IF NOT EXISTS payhere_recurring boolean,
+  ADD COLUMN IF NOT EXISTS payhere_item_recurrence text,
+  ADD COLUMN IF NOT EXISTS payhere_item_duration text,
+  ADD COLUMN IF NOT EXISTS payhere_item_rec_status text,
+  ADD COLUMN IF NOT EXISTS payhere_item_rec_date_next text,
+  ADD COLUMN IF NOT EXISTS payhere_item_rec_install_paid integer,
+  ADD COLUMN IF NOT EXISTS payhere_card_holder_name text,
+  ADD COLUMN IF NOT EXISTS payhere_card_no text,
+  ADD COLUMN IF NOT EXISTS payhere_card_expiry text,
+  ADD COLUMN IF NOT EXISTS payhere_custom_1 text,
+  ADD COLUMN IF NOT EXISTS payhere_custom_2 text;

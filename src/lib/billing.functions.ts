@@ -8,7 +8,9 @@ import {
   buildCheckoutHash,
   deriveBuyerFields,
   getPayHereConfig,
+  hasPayHereRetrievalConfig,
   planAmountCents,
+  reconcilePaymentOrderFromRetrieval,
   resolveAppBaseUrl,
 } from "./payhere.server";
 
@@ -58,11 +60,33 @@ export const getBilling = createServerFn({ method: "GET" })
 
     const plan = normalizePlanId(profile?.plan);
     const def = PLANS[plan] ?? PLANS.free;
-    const { data: recentOrders } = await supabase
+    let { data: recentOrders } = await supabase
       .from("payment_orders")
-      .select("payhere_order_id, plan, status, amount_cents, currency, created_at, paid_at")
+      .select("payhere_order_id, plan, status, amount_cents, currency, created_at, paid_at, payhere_method, payhere_card_no, payhere_status_message")
       .order("created_at", { ascending: false })
       .limit(5);
+
+    if (hasPayHereRetrievalConfig()) {
+      const pendingOrders = (recentOrders ?? []).filter((order) => order.status === "pending").slice(0, 2);
+      await Promise.all(
+        pendingOrders.map(async (order) => {
+          try {
+            await reconcilePaymentOrderFromRetrieval(order.payhere_order_id);
+          } catch (error) {
+            console.warn("[PayHere retrieval]", order.payhere_order_id, error);
+          }
+        }),
+      );
+
+      if (pendingOrders.length > 0) {
+        const refreshed = await supabase
+          .from("payment_orders")
+          .select("payhere_order_id, plan, status, amount_cents, currency, created_at, paid_at, payhere_method, payhere_card_no, payhere_status_message")
+          .order("created_at", { ascending: false })
+          .limit(5);
+        recentOrders = refreshed.data ?? recentOrders;
+      }
+    }
 
     return {
       plan,
@@ -103,7 +127,7 @@ export const startPayHereCheckout = createServerFn({ method: "POST" })
     const amount = amountToCheckoutString(amountCents);
     const orderId = `PH-${Date.now()}-${userId.slice(0, 8)}-${data.planId}`;
     const baseUrl = resolveAppBaseUrl(request);
-    const { merchantId, checkoutUrl, currency, sandbox } = getPayHereConfig();
+    const { merchantId, checkoutUrl, currency, sandbox, mode, recurringPeriod, recurringDuration } = getPayHereConfig();
 
     const { error } = await supabaseAdmin.from("payment_orders").insert({
       user_id: userId,
@@ -119,29 +143,43 @@ export const startPayHereCheckout = createServerFn({ method: "POST" })
     }
 
     const buyer = deriveBuyerFields(typeof claims.email === "string" ? claims.email : undefined);
+    const fields: Record<string, string> = {
+      merchant_id: merchantId,
+      return_url: `${baseUrl}/payhere/return?order_id=${encodeURIComponent(orderId)}`,
+      cancel_url: `${baseUrl}/payhere/cancel?order_id=${encodeURIComponent(orderId)}`,
+      notify_url: `${baseUrl}/payhere/notify`,
+      order_id: orderId,
+      items: `${plan.name} plan`,
+      currency,
+      hash: buildCheckoutHash(orderId, amount, currency),
+      first_name: buyer.first_name,
+      last_name: buyer.last_name,
+      email: buyer.email,
+      phone: buyer.phone,
+      address: buyer.address,
+      city: buyer.city,
+      country: buyer.country,
+      custom_1: data.planId,
+      custom_2: userId,
+    };
+
+    if (mode === "preapproval") {
+      // Preapproval amount is optional, but hash generation requires an amount input.
+      fields.amount = amount;
+    } else {
+      fields.amount = amount;
+    }
+
+    if (mode === "recurring") {
+      fields.recurrence = recurringPeriod;
+      fields.duration = recurringDuration;
+    }
+
     return {
       checkoutUrl,
       orderId,
       sandbox,
-      fields: {
-        merchant_id: merchantId,
-        return_url: `${baseUrl}/payhere/return`,
-        cancel_url: `${baseUrl}/payhere/cancel`,
-        notify_url: `${baseUrl}/payhere/notify`,
-        order_id: orderId,
-        items: `${plan.name} plan`,
-        currency,
-        amount,
-        hash: buildCheckoutHash(orderId, amount, currency),
-        first_name: buyer.first_name,
-        last_name: buyer.last_name,
-        email: buyer.email,
-        phone: buyer.phone,
-        address: buyer.address,
-        city: buyer.city,
-        country: buyer.country,
-        custom_1: data.planId,
-        custom_2: userId,
-      },
+      mode,
+      fields,
     };
   });

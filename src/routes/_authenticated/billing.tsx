@@ -177,6 +177,17 @@ function BillingPage() {
                     <div>
                       <p className="font-medium">{PLANS[order.plan as PlanId]?.name ?? order.plan} plan</p>
                       <p className="text-xs text-muted-foreground">{order.payhere_order_id}</p>
+                      {(order.payhere_method || order.payhere_card_no || order.payhere_status_message) && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {[
+                            order.payhere_method,
+                            order.payhere_card_no,
+                            order.payhere_status_message,
+                          ]
+                            .filter(Boolean)
+                            .join(" • ")}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="font-medium">{order.currency} {(order.amount_cents / 100).toFixed(2)}</p>

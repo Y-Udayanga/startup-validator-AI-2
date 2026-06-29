@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { finalizePayment, type PayHereCallbackPayload } from "@/lib/payhere.server";
+import { finalizePayment, reconcilePaymentOrderFromRetrieval, type PayHereCallbackPayload } from "@/lib/payhere.server";
 
 function toBillingRedirect(status: string, orderId: string | null, detail?: string) {
   const params = new URLSearchParams({ payment: status });
@@ -27,6 +27,17 @@ export const Route = createFileRoute("/payhere/return")({
       GET: async ({ request }) => {
         const payload = await readPayload(request);
         if (!payload.status_code || !payload.md5sig) {
+          if (payload.order_id) {
+            try {
+              const result = await reconcilePaymentOrderFromRetrieval(payload.order_id);
+              if (result) {
+                return toBillingRedirect(result.status, result.orderId);
+              }
+            } catch (error) {
+              console.error("[PayHere return retrieval]", error);
+            }
+          }
+
           return toBillingRedirect("pending", payload.order_id ?? null, "Waiting for payment confirmation");
         }
 
