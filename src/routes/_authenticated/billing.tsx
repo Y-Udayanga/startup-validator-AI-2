@@ -11,43 +11,22 @@ export const Route = createFileRoute("/_authenticated/billing")({
   component: BillingPage,
 });
 
-type PayHereClient = {
-  onCompleted?: (orderId: string) => void;
-  onDismissed?: () => void;
-  onError?: (error: string) => void;
-  startPayment: (payment: Record<string, unknown>) => void;
-};
+function submitPayHereForm(action: string, fields: Record<string, string>) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = action;
+  form.style.display = "none";
 
-declare global {
-  interface Window {
-    payhere?: PayHereClient;
-  }
-}
-
-async function loadPayHereJs(): Promise<PayHereClient> {
-  if (window.payhere) return window.payhere;
-
-  await new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[src="https://www.payhere.lk/lib/payhere.js"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Failed to load PayHere JavaScript SDK")), { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://www.payhere.lk/lib/payhere.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load PayHere JavaScript SDK"));
-    document.head.appendChild(script);
-  });
-
-  if (!window.payhere) {
-    throw new Error("PayHere JavaScript SDK is not available");
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
   }
 
-  return window.payhere;
+  document.body.appendChild(form);
+  form.submit();
 }
 
 function BillingPage() {
@@ -82,31 +61,11 @@ function BillingPage() {
       setPendingPlanId(planId);
       return checkoutFn({ data: { planId } });
     },
-    onSuccess: async (payload) => {
+    onSuccess: (payload) => {
       try {
-        const payhere = await loadPayHereJs();
-        payhere.onCompleted = (orderId: string) => {
-          toast.success(`Payment completed for order ${orderId}. Verifying with gateway...`);
-          // Notify callback may arrive slightly later; refresh billing data shortly after popup completion.
-          setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: ["billing"] });
-          }, 3000);
-        };
-        payhere.onDismissed = () => {
-          toast.info("Payment popup dismissed");
-        };
-        payhere.onError = (error: string) => {
-          toast.error(error || "PayHere reported a payment error");
-        };
-
-        payhere.startPayment({
-          sandbox: payload.sandbox,
-          ...payload.fields,
-          return_url: undefined,
-          cancel_url: undefined,
-        });
+        submitPayHereForm(payload.checkoutUrl, payload.fields);
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Unable to start PayHere popup");
+        toast.error(error instanceof Error ? error.message : "Unable to redirect to PayHere");
       }
     },
     onError: (error) => {
@@ -129,7 +88,7 @@ function BillingPage() {
         Pick the plan that fits how <span className="text-gradient">fast you ship</span>
       </h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-        PayHere sandbox is live for upgrades. Choose a paid plan and you will be redirected to the PayHere test checkout.
+        PayHere sandbox is live for upgrades. Choose a paid plan and you will be redirected to the PayHere checkout page.
       </p>
 
       {isLoading ? (
@@ -251,7 +210,7 @@ function BillingPage() {
       <div className="mt-6 rounded-2xl border border-border/60 bg-surface/20 p-4 text-sm text-muted-foreground">
         <p className="font-medium text-foreground">Sandbox notes</p>
         <p className="mt-2">
-          Payments open in PayHere sandbox and come back here automatically after checkout. A public deployment URL is recommended if you want server-to-server notify callbacks during testing.
+          Payments are submitted to PayHere using a secure form POST and come back here automatically after checkout. A public deployment URL is recommended if you want server-to-server notify callbacks during testing.
         </p>
         <a
           href="https://support.payhere.lk/api-&-mobile-sdk/payhere-checkout"
