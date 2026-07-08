@@ -21,9 +21,37 @@ export function createGoogleAiStudioProvider(apiKey: string) {
   });
 }
 
-function isOpenAiQuotaError(error: unknown) {
+function getErrorText(error: unknown) {
+  return (error instanceof Error ? error.message : String(error)).toLowerCase();
+}
+
+function isRateLimitOrQuotaError(error: unknown) {
+  const text = getErrorText(error);
+  return (
+    text.includes("too many requests") ||
+    text.includes("rate limit") ||
+    text.includes("rate_limit") ||
+    text.includes("resource_exhausted") ||
+    text.includes("insufficient_quota") ||
+    text.includes("quota") ||
+    text.includes("billing") ||
+    text.includes("credit") ||
+    text.includes("429")
+  );
+}
+
+function rateLimitMessage(provider: string) {
+  return `${provider} is currently rate-limited or out of quota. Please wait a minute and try again. Your monthly validation count was not used.`;
+}
+
+function allProvidersRateLimitedMessage() {
+  return "All configured AI providers are currently rate-limited or out of quota. Please wait a minute and try again. Your monthly validation count was not used.";
+}
+
+function isOpenAiFallbackError(error: unknown) {
   const text = (error instanceof Error ? error.message : String(error)).toLowerCase();
   return (
+    isRateLimitOrQuotaError(error) ||
     text.includes("insufficient_quota") ||
     text.includes("quota") ||
     text.includes("billing") ||
@@ -59,11 +87,15 @@ export async function generateTextWithFallback(params: FallbackParams) {
         model: provider(openAiModel),
         prompt: params.prompt,
         temperature: params.temperature,
+        maxRetries: 0,
       });
       return { text, provider: "openai" as const, model: openAiModel };
     } catch (error) {
-      if (!googleApiKey || !isOpenAiQuotaError(error)) {
+      if (!isOpenAiFallbackError(error)) {
         throw error;
+      }
+      if (!googleApiKey) {
+        throw new Error(rateLimitMessage("OpenAI"));
       }
     }
   }
@@ -73,10 +105,18 @@ export async function generateTextWithFallback(params: FallbackParams) {
   }
 
   const provider = createGoogleAiStudioProvider(googleApiKey);
-  const { text } = await generateText({
-    model: provider(googleModel),
-    prompt: params.prompt,
-    temperature: params.temperature,
-  });
-  return { text, provider: "google-ai-studio" as const, model: googleModel };
+  try {
+    const { text } = await generateText({
+      model: provider(googleModel),
+      prompt: params.prompt,
+      temperature: params.temperature,
+      maxRetries: 0,
+    });
+    return { text, provider: "google-ai-studio" as const, model: googleModel };
+  } catch (error) {
+    if (isRateLimitOrQuotaError(error)) {
+      throw new Error(openAiApiKey ? allProvidersRateLimitedMessage() : rateLimitMessage("Google AI Studio"));
+    }
+    throw error;
+  }
 }
