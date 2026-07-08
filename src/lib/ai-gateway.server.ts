@@ -74,7 +74,8 @@ export async function generateTextWithFallback(params: FallbackParams) {
   const googleModel = params.googleModel ?? process.env.GOOGLE_MODEL ?? "gemini-2.0-flash";
 
   const openAiApiKey = params.openAiApiKey ?? process.env.OPENAI_API_KEY;
-  const googleApiKey = params.googleApiKey ?? process.env.GOOGLE_AI_STUDIO_API_KEY ?? process.env.GOOGLE_API_KEY;
+  const googleApiKey =
+    params.googleApiKey ?? process.env.GOOGLE_AI_STUDIO_API_KEY ?? process.env.GOOGLE_API_KEY;
 
   if (!openAiApiKey && !googleApiKey) {
     throw new Error("Missing API keys: set OPENAI_API_KEY or GOOGLE_AI_STUDIO_API_KEY");
@@ -115,7 +116,9 @@ export async function generateTextWithFallback(params: FallbackParams) {
     return { text, provider: "google-ai-studio" as const, model: googleModel };
   } catch (error) {
     if (isRateLimitOrQuotaError(error)) {
-      throw new Error(openAiApiKey ? allProvidersRateLimitedMessage() : rateLimitMessage("Google AI Studio"));
+      throw new Error(
+        openAiApiKey ? allProvidersRateLimitedMessage() : rateLimitMessage("Google AI Studio"),
+      );
     }
     throw error;
   }
